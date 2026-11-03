@@ -1,0 +1,47 @@
+# Ambiente de pruebas de MatriculaRef (EDT 2.2.1 y 2.2.2)
+# Uso (desde esta carpeta):  docker compose up -d --build
+name: matricularef
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: matricula
+      POSTGRES_PASSWORD: matricula
+      POSTGRES_DB: matricula
+    ports:
+      - "5432:5432"
+    volumes:
+      - ../sut/db/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ../data/seed/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql:ro
+      - ../data/seed:/seed:ro
+      - ../sql:/sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U matricula -d matricula"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  tesoreria:
+    build: ../sut/tesoreria
+    environment:
+      DATABASE_URL: postgresql://matricula:matricula@db:5432/matricula
+    ports:
+      - "8001:8001"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    build: ../sut/api
+    environment:
+      DATABASE_URL: postgresql://matricula:matricula@db:5432/matricula
+      TESORERIA_URL: http://tesoreria:8001
+      MODO_DEFECTOS: ${MODO_DEFECTOS:-1}   # 1 = v1.0.0 con las fallas del acta; 0 = reglas corregidas
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      tesoreria:
+        condition: service_started

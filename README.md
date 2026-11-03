@@ -32,12 +32,21 @@ Estrategia de pruebas para el sistema de matrícula de la Universidad de Referen
 
 Solo el líder de QA publica versiones nuevas del documento en `docs/`, cada una con una etiqueta de Git (`doc-v2.0`, `doc-v2.1`…). Cada integrante entrega el archivo descargado de esa etiqueta, de modo que todos los envíos sean idénticos.
 
-## Ejecución (cuando MatriculaRef v1.0.0 esté disponible)
+## Ejecución
 
-```bash
+Requisitos: Docker Desktop, k6 y Python 3.12 (solo para regenerar datos).
+
+```powershell
 cd docker
-docker compose up -d        # levanta API, base de datos y Tesorería simulada
-k6 run ../tests/k6/smoke.js # prueba de humo antes de cada sesión
+docker compose up -d --build      # API (8000), Tesorería simulada (8001) y PostgreSQL (5432)
+cd ..
+k6 run tests/k6/smoke.js          # prueba de humo antes de cada sesión
+.\data\reset.ps1                 # reiniciar los datos antes de cada corrida
+k6 run -e USUARIOS=50 tests/k6/concurrencia_ultimo_cupo.js
 ```
+
+- Documentación interactiva de la API (ejecución manual): http://localhost:8000/docs
+- Datos fijos para cada caso: [`data/seed/FIXTURES.md`](data/seed/FIXTURES.md)
+- Verificaciones SQL: `docker compose -f docker/docker-compose.yml exec db psql -U matricula -d matricula -f /sql/verificar_coherencia.sql`
 
 > Todos los datos son ficticios. No se usan datos reales de estudiantes.
