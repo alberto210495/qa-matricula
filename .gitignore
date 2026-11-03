@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+
+# Node / k6
+node_modules/
+
+# Resultados pesados de k6 (guardar solo los resúmenes en evidencias/)
+*.ndjson
+tests/k6/results/
+
+# Archivos temporales de Office y del sistema
+~$*
+.DS_Store
+Thumbs.db
+
+# Datos generados localmente (los datos base versionados van en data/seed/)
+data/generated/
