@@ -40,12 +40,14 @@ Requisitos: Docker Desktop, k6 y Python 3.12 (solo para regenerar datos).
 cd docker
 docker compose up -d --build      # API (8000), Tesorería simulada (8001) y PostgreSQL (5432)
 cd ..
-k6 run tests/k6/smoke.js          # prueba de humo antes de cada sesión
+k6 run tests/k6/smoke.js          # prueba de humo: deja evidencias/smoke_v1.0.0.json y .html
 .\data\reset.ps1                 # reiniciar los datos antes de cada corrida
 k6 run -e USUARIOS=50 tests/k6/concurrencia_ultimo_cupo.js
 ```
 
 - Documentación interactiva de la API (ejecución manual): http://localhost:8000/docs
+- Diferencias entre este ambiente y producción (riesgo R1): [`docs/diferencias_produccion.md`](docs/diferencias_produccion.md)
+- Cada script de k6 exporta su resultado en JSON y en HTML a `evidencias/` (informe generado por `tests/k6/lib/reporte_html.js`, sin dependencias externas)
 - Datos fijos para cada caso: [`data/seed/FIXTURES.md`](data/seed/FIXTURES.md)
 - Verificaciones SQL: `docker compose -f docker/docker-compose.yml exec db psql -U matricula -d matricula -f /sql/verificar_coherencia.sql`
 

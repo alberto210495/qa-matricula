@@ -1,9 +1,11 @@
 // CP-CUP-01 a 04 · RN-CUP-01: N estudiantes intentan tomar el último cupo de la sección 1 al mismo tiempo.
 // Uso: k6 run -e USUARIOS=50 tests/k6/concurrencia_ultimo_cupo.js
 // Reiniciar los datos antes de cada corrida (data/reset.ps1).
+// Genera evidencias/cup_<N>u_seccion<S>.json y .html
 import http from 'k6/http';
 import { check } from 'k6';
 import { Counter } from 'k6/metrics';
+import { reporteHtml } from './lib/reporte_html.js';
 
 const BASE = __ENV.BASE_URL || 'http://localhost:8000';
 const USUARIOS = parseInt(__ENV.USUARIOS || '50');
@@ -38,8 +40,15 @@ export function handleSummary(data) {
     sobrecupo: Math.max(n('inscripciones_aceptadas') - CUPO, 0),
     resultado: n('inscripciones_aceptadas') <= CUPO ? 'APROBADO' : 'FALLIDO',
   };
+  const base = `evidencias/cup_${USUARIOS}u_seccion${SECCION}`;
   return {
     stdout: `\n${JSON.stringify(resumen, null, 2)}\n`,
-    [`evidencias/cup_${USUARIOS}u_seccion${SECCION}.json`]: JSON.stringify(resumen, null, 2),
+    [`${base}.json`]: JSON.stringify(resumen, null, 2),
+    [`${base}.html`]: reporteHtml(data, {
+      titulo: 'Concurrencia sobre el último cupo',
+      caso: resumen.caso,
+      version: __ENV.VERSION ? `v${__ENV.VERSION}` : '',
+      extra: { 'Inscripciones aceptadas': resumen.aceptadas, 'Rechazadas sin cupo': resumen.rechazadas, 'Sobrecupo': resumen.sobrecupo },
+    }),
   };
 }

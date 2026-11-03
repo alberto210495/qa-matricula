@@ -22,7 +22,7 @@ docker compose up -d --build
 La primera vez descarga las imágenes y carga los datos (1–2 minutos). Luego, desde la raíz del repositorio:
 
 ```powershell
-k6 run tests/k6/smoke.js          # prueba de humo: todas las verificaciones deben pasar
+k6 run tests/k6/smoke.js          # prueba de humo: todas las verificaciones deben pasar (JSON y HTML en evidencias/)
 ```
 
 Comandos útiles:
@@ -32,6 +32,10 @@ docker compose -f docker/docker-compose.yml logs -f api   # ver el registro de l
 .\data\reset.ps1                                          # reiniciar los datos (antes de cada corrida)
 docker compose -f docker/docker-compose.yml down -v       # apagar y borrar la base
 ```
+
+## Diferencias con producción
+
+El ambiente corre en una sola máquina con Tesorería simulada, datos sintéticos y sin portal web. El detalle de cada diferencia y qué resultados se pueden trasladar a producción está en [`docs/diferencias_produccion.md`](../docs/diferencias_produccion.md).
 
 ## Endpoints
 
